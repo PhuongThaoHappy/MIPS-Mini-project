@@ -1,0 +1,257 @@
+.data
+	A: .space 10
+	E: .asciiz "Nhap sai!"
+	F: .asciiz "So qua lon!"
+	_A:.asciiz "So nam ngoai pham vi"
+	
+	_m:.asciiz "trieu "
+	_t:.asciiz "nghin "
+	_h:.asciiz "tram "
+	_ty:.asciiz "chuc "
+	
+	_0: .asciiz "khong "
+	_0a:.asciiz "linh "
+	_0b:.asciiz " "
+	_1:.asciiz "mot "
+	_2:.asciiz "hai "
+	_3:.asciiz "ba "
+	_4:.asciiz "bon "
+	_5:.asciiz "nam "
+	_5a:.asciiz "lam "
+	_6:.asciiz "sau "
+	_7:.asciiz "bay "
+	_8:.asciiz  "tam "
+	_9:.asciiz "chin "
+	
+iMess:	.asciiz "Bang so: "
+oMess:	.asciiz "Bang chu: " 
+
+.text
+main:
+	li $v0,51
+	la $a0,A
+	syscall
+	
+	beq $a1,-1,tooBig
+	bne $a1,0,notInt
+	
+	move $s0,$a0
+	move $s3, $a0
+					
+	li $v0, 4
+	la $a0, oMess 
+	syscall #In ra cau lenh "Bang chu: "
+notInt: li $v0, 55
+	la $a0, E
+	li $a1,0
+	syscall
+	j end	
+tooBig: li $v0, 55
+	la $a0, F
+	li $a1,0
+	syscall
+	j end
+TH1.1:	bgt $s0, 999999999, OutOfRange	# n > 999999999  
+TH1.2:	blt $s0, 0, OutOfRange # n < 0
+TH2:	beqz $s0, ZERO # n = 0
+TH3:	bgt $s0, 1000000, trieu
+TH4:	bgt $s0, 1000, nghin
+TH5:	blt $s0, 100, tram
+OutOfRange:
+	li $v0, 4
+	la $a0, _A
+	syscall #In thong bao so vuot ngoai pham vi
+	j end
+ZERO:	li $v0, 4
+	la $a0, oMess 
+	syscall #In ra dong "Bang chu: "
+	
+	li $v0, 4
+	la $a0, _0 #Chuyen tu so -> chu
+	syscall
+	
+	j end
+Output: li $v0, 4
+	la $a0, oMess 
+	syscall #In ra dong "Bang chu: "
+trieu:	div $s1, $s0, 1000000
+	move $s3, $s1
+	blt $s1, 100, _chuctrieu
+	blt $s1, 10, _trieu
+_tramtrieu:
+	div $s2, $s1, 100
+	jal convert_number
+	
+	jal ctram 
+	
+	mfhi $t0
+	beqz $t0, endM
+	
+	li $t1, 100
+	
+	mul $s2, $s2, 100
+	sub $s1, $s1, $s2
+_chuctrieu:
+	div $s2, $s1, 10
+	jal convert_number
+	
+	jal cchuc
+	
+	mfhi $t0
+	beqz $t0, endM
+	
+	li $t1, 1
+	
+	mul $s2, $s2, 10
+	sub $s1, $s1, $s2
+_trieu:
+	jal convert_number
+	li $t1, 2
+endM:	li $v0, 4
+	la $a0, _m
+	syscall
+
+	mul $s3, $s3, 1000000
+	sub $s0, $s0, $s3
+nghin:	div $s1, $s0, 1000
+	move $s3, $s1
+	blt $s1, 100, _chucnghin
+	blt $s1, 10, _nghin
+_tramnghin:
+	div $s2, $s1, 100
+	jal convert_number
+	
+	jal ctram 
+	
+	mfhi $t0
+	beqz $t0, endH
+	
+	li $t1, 0
+	
+	mul $s2, $s2, 100
+	sub $s1, $s1, $s2
+_chucnghin:
+	div $s2, $s1, 10
+	jal convert_number
+	
+	jal cchuc
+	
+	mfhi $t0
+	beqz $t0, endM
+	
+	li $t1, 1
+	
+	mul $s2, $s2, 10
+	sub $s1, $s1, $s2
+_nghin:	jal convert_number
+	li $t1, 2
+endH:	li $v0, 4
+	la $a0, _t
+	syscall
+	
+	mul $s3, $s3, 1000
+	sub $s0, $s0, $s3
+tram:
+_tram:	div $s2, $s1, 100
+	jal convert_number
+	
+	jal ctram 
+	
+	mfhi $t0
+	beqz $t0, end
+	
+	li $t1, 0
+	
+	mul $s2, $s2, 100
+	sub $s1, $s1, $s2
+_chuc:	div $s2, $s1, 10
+	jal convert_number
+	
+	jal cchuc
+	
+	mfhi $t0
+	beqz $t0, end
+	
+	li $t1, 1
+	
+	mul $s2, $s2, 10
+	sub $s1, $s1, $s2
+_donvi:	jal convert_number
+	li $t1, 2
+	j end
+ctram:	li $v0, 4
+	la $a0, _h
+	syscall
+	jr $ra
+cchuc:	li $v0, 4
+	la $a0, _ty
+	syscall
+	jr $ra
+convert_number:
+case1:	bne $s2, 1, case2
+	li $v0, 4
+	la $a0, _1
+	syscall
+	jr $ra
+case2:	bne $s2, 2, case3
+	li $v0, 4
+	la $a0, _2
+	syscall
+	jr $ra
+case3:	bne $s2, 3, case4
+	li $v0, 4
+	la $a0, _3
+	syscall
+	jr $ra
+case4:	bne $s2, 4, case5
+	li $v0, 4
+	la $a0, _4
+	syscall
+	jr $ra
+case5:	bne $s2, 5, case6
+	li $v0, 4
+if:	la $a0, _5
+	syscall
+	jr $ra
+else:	la $a0, _5
+	syscall
+	jr $ra
+case6:	bne $s2, 6, case7
+	li $v0, 4
+	la $a0, _6
+	syscall
+	jr $ra
+case7:	bne $s2, 7, case8
+	li $v0, 4
+	la $a0, _7
+	syscall
+	jr $ra
+case8:	bne $s2, 8, case9
+	li $v0, 4
+	la $a0, _8
+	syscall
+	jr $ra
+case9:	bne $s2, 9, case0
+	li $v0, 4
+	la $a0, _9
+	syscall
+	jr $ra
+	
+	beq $t1, 0, case0
+	beq $t1, 1, case0a
+	beq $t1, 2, case0b
+	
+case0:	li $v0, 4
+	la $a0, _0
+	syscall
+	jr $ra
+case0a:	li $v0, 4
+	la $a0, _0a
+	syscall
+	jr $ra
+case0b:	li $v0, 4
+	la $a0, _0b
+	syscall
+	jr $ra
+end:	li $v0, 10
+	syscall
